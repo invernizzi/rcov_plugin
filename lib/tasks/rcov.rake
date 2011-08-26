@@ -11,11 +11,11 @@ def run_coverage(files)
   files = files.join(" ")
 
   if RUBY_PLATFORM =~ /darwin/
-    exclude = '--exclude "gems/*" --exclude "Library/Frameworks/*"'
+    exclude = '--exclude "gems/*" --exclude "Library/Frameworks/*" --exclude "/*"'
   elsif RUBY_PLATFORM =~ /java/
     exclude = '--exclude "rubygems/*,jruby/*,parser*,gemspec*,_DELEGATION*,eval*,recognize_optimized*,yaml,yaml/*,fcntl"'
   else
-    exclude = '--exclude "rubygems/*"'
+    exclude = '--exclude "rubygems/*" --exclude "/*"'
   end
   # rake test:units:rcov SHOW_ONLY=models,controllers,lib,helpers
   # rake test:units:rcov SHOW_ONLY=m,c,l,h
