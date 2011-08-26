@@ -11,13 +11,12 @@ def run_coverage(files)
   files = files.join(" ")
 
   if RUBY_PLATFORM =~ /darwin/
-    exclude = '--exclude "gems/*" --exclude "Library/Frameworks/*"'
+    exclude = '--exclude "gems/*" --exclude "Library/Frameworks/*,^(?!app|lib)"'
   elsif RUBY_PLATFORM =~ /java/
-    exclude = '--exclude "rubygems/*,jruby/*,parser*,gemspec*,_DELEGATION*,eval*,recognize_optimized*,yaml,yaml/*,fcntl"'
+    exclude = '--exclude "rubygems/*,jruby/*,parser*,gemspec*,_DELEGATION*,eval*,recognize_optimized*,yaml,yaml/*,fcntl,^(?!app|lib)"'
   else
-    exclude = '--exclude "rubygems/*"'
+    exclude = '--exclude "rubygems/*,^(?!app|lib)"'
   end
-  exclude += '--exclude  /gems/,/Library/,spec'
   # rake test:units:rcov SHOW_ONLY=models,controllers,lib,helpers
   # rake test:units:rcov SHOW_ONLY=m,c,l,h
   if ENV['SHOW_ONLY']
@@ -46,9 +45,22 @@ def run_coverage(files)
   puts
   puts
   puts "Running tests..."
-  cmd = "#{rcov} #{files}"
+  cmd = "#{rcov} #{files} | tee tmp/rcov_output.txt"
   puts cmd
   sh cmd
+
+  # Create xml report for teamcity
+  text_report = File.read 'tmp/rcov_output.txt'
+  total_coverage = Float text_report.scan(/^\|Total.*\|.*\|.*\|\s*([0-9.]*)%\s*\|$/)[0][0]
+  begin
+    xml = File.read "teamcity-info.xml"
+  rescue
+    xml = "<build>\n</build>"
+  end
+  require "rexml/document"
+  doc = REXML::Document.new xml
+  doc.root.add_element "statisticValue" , "key" => "RailsCoverageL", "value" => total_coverage.to_s
+  File.open("teamcity-info.xml", 'w') { |f| f.write doc.to_s }
 end
 
 namespace :test do
