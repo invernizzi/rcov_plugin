@@ -59,7 +59,7 @@ def run_coverage(files)
   end
   require "rexml/document"
   doc = REXML::Document.new xml
-  doc.root.add_element "statisticValue" , "key" => "RailsCoverageL", "value" => total_coverage.to_s
+  doc.root.add_element "statisticValue" , "key" => "RailsCoverageL", "value" => total_coverage.to_i.to_s
   File.open("teamcity-info.xml", 'w') { |f| f.write doc.to_s }
 end
 
