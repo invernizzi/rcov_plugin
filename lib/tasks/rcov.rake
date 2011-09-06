@@ -52,15 +52,7 @@ def run_coverage(files)
   # Create xml report for teamcity
   text_report = File.read 'tmp/rcov_output.txt'
   total_coverage = Float text_report.scan(/^\|Total.*\|.*\|.*\|\s*([0-9.]*)%\s*\|$/)[0][0]
-  begin
-    xml = File.read "teamcity-info.xml"
-  rescue
-    xml = "<build>\n</build>"
-  end
-  require "rexml/document"
-  doc = REXML::Document.new xml
-  doc.root.add_element "statisticValue" , "key" => "RailsCoverageL", "value" => total_coverage.to_i.to_s
-  File.open("teamcity-info.xml", 'w') { |f| f.write doc.to_s }
+  puts "##teamcity[buildStatisticValue key='RailsCoverageL' value='#{total_coverage.to_i}']"
 end
 
 namespace :test do
